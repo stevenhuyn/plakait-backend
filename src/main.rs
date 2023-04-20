@@ -7,7 +7,7 @@ use axum::{
     BoxError, Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
-use config::Config;
+use config::{Config, Value};
 use reqwest::{header::CONTENT_TYPE, Client, Method};
 use routes::GameStates;
 use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
@@ -50,27 +50,24 @@ async fn main() {
         .init();
 
     let mut config = Config::builder()
-        // Add in `./Settings.toml`
         .add_source(config::File::with_name("./config.json"))
         .build()
         .unwrap()
-        .try_deserialize::<HashMap<String, String>>()
+        .try_deserialize::<HashMap<String, Value>>()
         .unwrap();
+
+    let environment = config
+        .remove(ENVIRONMENT_CONFIG)
+        .unwrap_or_else(|| panic!("{} not found in config.json", ENVIRONMENT_CONFIG))
+        .to_string();
 
     let open_ai_key = config
         .remove(OPEN_AI_KEY_CONFIG)
-        .unwrap_or_else(|| panic!("{} not found in config.json", OPEN_AI_KEY_CONFIG));
-
-    let environment = match config.remove(ENVIRONMENT_CONFIG) {
-        Some(env) => match env.as_str() {
-            "prod" | "dev" => env,
-            _ => panic!("Unknown environment value in config"),
-        },
-        None => panic!("{} not found in config.json", ENVIRONMENT_CONFIG),
-    };
+        .unwrap_or_else(|| panic!("{} not found in config.json", OPEN_AI_KEY_CONFIG))
+        .to_string();
 
     let context = Arc::new(Context {
-        open_ai_key: open_ai_key.clone(),
+        open_ai_key,
         client: reqwest::Client::new(),
         game_state: RwLock::new(HashMap::new()),
     });
@@ -89,7 +86,7 @@ async fn main() {
             "http://localhost:5173".parse().unwrap(),
             "https://localhost:5173".parse().unwrap(),
         ],
-        _ => panic!("Impossible"),
+        _ => panic!("config.json envrionment value must be `prod` or `dev`"),
     };
 
     tracing::debug!("{}", environment);
@@ -106,40 +103,39 @@ async fn main() {
         .route("/chat/:id", post(post_chat).with_state(context.clone()))
         .layer(cors);
 
-    match environment.as_str() {
-        "prod" => {
-            // optional: spawn a second server to redirect http requests to this server
-            tokio::spawn(redirect_http_to_https(ports));
-            let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
+    if environment.as_str() == "prod" {
+        // optional: spawn a second server to redirect http requests to this server
+        tokio::spawn(redirect_http_to_https(ports));
+        let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
 
-            let cert_location = config
-                .remove(CERT_LOCATION_CONFIG)
-                .unwrap_or_else(|| panic!("{} not found in config.json", CERT_LOCATION_CONFIG));
+        let cert_location = config
+            .remove(CERT_LOCATION_CONFIG)
+            .unwrap_or_else(|| panic!("{} not found in config.json", CERT_LOCATION_CONFIG))
+            .to_string();
 
-            // configure certificate and private key used by https
-            let tls_config = RustlsConfig::from_pem_file(
-                PathBuf::from(&cert_location).join("cert.pem"),
-                PathBuf::from(&cert_location).join("privkey.pem"),
-            )
+        // configure certificate and private key used by https
+        let tls_config = RustlsConfig::from_pem_file(
+            PathBuf::from(&cert_location).join("cert.pem"),
+            PathBuf::from(&cert_location).join("privkey.pem"),
+        )
+        .await
+        .unwrap();
+
+        // run https server
+        tracing::debug!("listening on {}", addr);
+        axum_server::bind_rustls(addr, tls_config)
+            .serve(app.into_make_service())
             .await
             .unwrap();
-
-            // run https server
-            tracing::debug!("listening on {}", addr);
-            axum_server::bind_rustls(addr, tls_config)
-                .serve(app.into_make_service())
-                .await
-                .unwrap();
-        }
-        _ => {
-            // run http server
-            let addr = SocketAddr::from(([127, 0, 0, 1], ports.http));
-            tracing::debug!("listening on {}", addr);
-            axum_server::bind(addr)
-                .serve(app.into_make_service())
-                .await
-                .unwrap();
-        }
+    } else {
+        // environment == "dev"
+        // run http server
+        let addr = SocketAddr::from(([127, 0, 0, 1], ports.http));
+        tracing::debug!("listening on {}", addr);
+        axum_server::bind(addr)
+            .serve(app.into_make_service())
+            .await
+            .unwrap();
     }
 }
 
