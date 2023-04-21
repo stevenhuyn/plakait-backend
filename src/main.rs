@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Host, State},
+    extract::Host,
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
     response::Redirect,
@@ -15,7 +15,7 @@ use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
-use crate::routes::{chat::post_chat, game::post_game, history::get_history};
+use crate::routes::{chat::post_chat, game::post_game, history::get_history, root::get_root};
 
 mod app_error;
 mod gpt;
@@ -97,7 +97,7 @@ async fn main() {
         .allow_headers([CONTENT_TYPE]);
 
     let app = Router::new()
-        .route("/", get(message_handler).with_state(context.clone()))
+        .route("/", get(get_root).with_state(context.clone()))
         .route("/history/:id", get(get_history).with_state(context.clone()))
         .route("/game", post(post_game).with_state(context.clone()))
         .route("/chat/:id", post(post_chat).with_state(context.clone()))
@@ -137,12 +137,6 @@ async fn main() {
             .await
             .unwrap();
     }
-}
-
-async fn message_handler(State(_context): State<Arc<Context>>) -> &'static str {
-    tracing::debug!("get request received!");
-
-    "Hello, World!"
 }
 
 async fn redirect_http_to_https(ports: Ports) {
