@@ -17,6 +17,7 @@ use crate::{
 pub mod chat;
 pub mod game;
 pub mod history;
+pub mod root;
 
 type MessageRole = ChatCompletionMessageRole;
 pub type GameStates = RwLock<HashMap<Uuid, Arc<Mutex<GameState>>>>;

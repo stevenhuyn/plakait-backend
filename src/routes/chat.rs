@@ -73,7 +73,6 @@ impl From<Message> for ChatCompletionMessage {
     }
 }
 
-// TODO: Refactor messaging behaviour from post_game and post_chat
 #[debug_handler]
 pub async fn post_chat(
     Path(game_id): Path<Uuid>,
