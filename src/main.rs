@@ -96,12 +96,7 @@ async fn main() {
         .allow_methods([Method::GET, Method::POST])
         .allow_headers([CONTENT_TYPE]);
 
-    let app = Router::new()
-        .route("/", get(get_root).with_state(context.clone()))
-        .route("/history/:id", get(get_history).with_state(context.clone()))
-        .route("/game", post(post_game).with_state(context.clone()))
-        .route("/chat/:id", post(post_chat).with_state(context.clone()))
-        .layer(cors);
+    let app = app(&context).layer(cors);
 
     if environment.as_str() == "prod" {
         // optional: spawn a second server to redirect http requests to this server
@@ -137,6 +132,16 @@ async fn main() {
             .await
             .unwrap();
     }
+}
+
+/// Having a function that produces our app makes it easy to call it from tests
+/// without having to create an HTTP server.
+pub fn app(context: &Arc<Context>) -> Router {
+    Router::new()
+        .route("/", get(get_root).with_state(context.clone()))
+        .route("/history/:id", get(get_history).with_state(context.clone()))
+        .route("/game", post(post_game).with_state(context.clone()))
+        .route("/chat/:id", post(post_chat).with_state(context.clone()))
 }
 
 async fn redirect_http_to_https(ports: Ports) {
