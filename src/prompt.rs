@@ -29,7 +29,10 @@ ONLY output your message as a VALID JSON object with fields
 "name" (required), 
 "expression" (required), a unicode emoji representing their face, 
 "dialogue" (required), 
-"endMessage" (nullable) A narration from 3rd person of why a sale is no longer possible or description of sale. Only shown at the end of the game.
+"endMessage" (nullable) A narration from 3rd person only shown at the end of the game Given by one of these end states:
+- Sale is no longer possible e.g. John leaving the dealership or Nick refusing to continue to converse with John
+- John accepts a price Nick offers for the car. Please include description of sale including price
+- I send a message similar in meaning to "End Game"
 
 I will input my message as string, interpret it as John's dialogue or action.
 
@@ -52,6 +55,7 @@ ONLY output your message as a VALID JSON object with fields
 - When I have picked up Jack succesfully
 - I can no longer converse with Pamela to give you Jack
 - I leave leave Pamela's house empty handed
+- I send a message similar in meaning to "End Game"
 
 I will input my message as string, interpret it as Jane's dialogue or action.
 
@@ -76,6 +80,7 @@ ONLY output your message as a VALID JSON object with fields
 - Jared's toilet use is no longer possible
 - If the one who needs to go to the toilet ends up relieving themself, in the toilet or not (e.g. on the ground)
 - It is no longer possible to converse with Jared
+- I send a message similar in meaning to "End Game"
 
 Examples:
 {
