@@ -10,7 +10,7 @@ use axum_server::tls_rustls::RustlsConfig;
 use config::{Config, Value};
 use reqwest::{header::CONTENT_TYPE, Client, Method};
 use routes::GameStates;
-use std::{collections::HashMap, fs, net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, Layer};
