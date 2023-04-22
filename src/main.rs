@@ -49,14 +49,8 @@ async fn main() {
         })))
         .init();
 
-    let config_path = fs::canonicalize("./config.json").unwrap_or_else(|_| {
-        panic!(
-            "config.json not found. Please create a config.json file in the root directory of the project. See config.example.json for an example."
-        )
-    });
-
     let mut config = Config::builder()
-        .add_source(config::File::from(config_path))
+        .add_source(config::File::with_name("./config.json"))
         .build()
         .unwrap()
         .try_deserialize::<HashMap<String, Value>>()
