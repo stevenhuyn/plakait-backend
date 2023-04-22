@@ -27,4 +27,7 @@ sudo systemctl status plakait-backend.service
 
 # Restart service
 sudo systemctl restart plakait-backend
+
+# What the service's output
+sudo journalctl -f -u plakait-backend.service
 ```
