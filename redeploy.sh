@@ -2,4 +2,4 @@
 
 cargo build --release
 sudo fuser -k 3000/tcp
-sudo ./target/release/plakait-backend
+sudo systemctl restart plakait-backend
