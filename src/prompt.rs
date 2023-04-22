@@ -48,7 +48,10 @@ ONLY output your message as a VALID JSON object with fields
 "name", (required)
 "expression", (required) a unicode emoji representing their face, 
 "dialogue", (required)
-"endMessage" (nullable) Only appears if you have picked up Jack succesfully or you can no longer converse with Pamela to give you Jack or you leave Pamela's house empty handed
+"endMessage" (nullable) A narration from 3rd person only shown at the end of the game Given by one of these end states:
+- When I have picked up Jack succesfully
+- I can no longer converse with Pamela to give you Jack
+- I leave leave Pamela's house empty handed
 
 I will input my message as string, interpret it as Jane's dialogue or action.
 
