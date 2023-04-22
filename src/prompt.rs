@@ -78,7 +78,7 @@ ONLY output your message as a VALID JSON object with fields
 "dialogue" (required) 
 "endMessage" (nullable) A narration from 3rd person only shown at the end of the game Given by one of these end states:
 - Jared's toilet use is no longer possible
-- If the one who needs to go to the toilet ends up relieving themself, in the toilet or not (e.g. on the ground)
+- One of the Users (not Jared) defecates (aka shit, poo) or pees, in the toilet or not (e.g. on the ground)
 - It is no longer possible to converse with Jared
 - I send a message similar in meaning to "End Game"
 
