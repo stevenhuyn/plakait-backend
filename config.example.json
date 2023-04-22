@@ -1,4 +1,5 @@
 {
+  "COMPLETION_URL": "https://api.openai.com/v1/chat/completions",
   "OPENAI_SECRET_KEY": "",
   "ENVIRONMENT": "",
   "CERT_LOCATION": null

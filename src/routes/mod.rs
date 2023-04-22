@@ -75,11 +75,18 @@ pub async fn send_user_message(
     })
     .to_string();
 
-    let json_ai_response: JsonAiResponse =
-        match gpt_chat_retry(&context.client, &context.open_ai_key, &json, RETRY_COUNT).await {
-            Ok(response) => response,
-            Err(_err) => return Err(anyhow!("Failed to get valid response from OpenAI").into()),
-        };
+    let json_ai_response: JsonAiResponse = match gpt_chat_retry(
+        &context.client,
+        &context.completion_url,
+        &context.open_ai_key,
+        &json,
+        RETRY_COUNT,
+    )
+    .await
+    {
+        Ok(response) => response,
+        Err(_err) => return Err(anyhow!("Failed to get valid response from OpenAI").into()),
+    };
 
     let dialogue = json_ai_response.dialogue;
 

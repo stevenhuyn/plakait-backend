@@ -32,11 +32,8 @@ pub struct Context {
     open_ai_key: String,
     client: Client,
     game_state: GameStates,
+    completion_url: String,
 }
-
-const OPEN_AI_KEY_CONFIG: &str = "OPENAI_SECRET_KEY";
-const ENVIRONMENT_CONFIG: &str = "ENVIRONMENT";
-const CERT_LOCATION_CONFIG: &str = "CERT_LOCATION";
 
 #[tokio::main]
 async fn main() {
@@ -57,16 +54,22 @@ async fn main() {
         .unwrap();
 
     let environment = config
-        .remove(ENVIRONMENT_CONFIG)
-        .unwrap_or_else(|| panic!("{} not found in config.json", ENVIRONMENT_CONFIG))
+        .remove("ENVIRONMENT")
+        .unwrap_or_else(|| panic!("ENVIRONMENT not found in config.json"))
         .to_string();
 
     let open_ai_key = config
-        .remove(OPEN_AI_KEY_CONFIG)
-        .unwrap_or_else(|| panic!("{} not found in config.json", OPEN_AI_KEY_CONFIG))
+        .remove("OPENAI_SECRET_KEY")
+        .unwrap_or_else(|| panic!("OPENAI_SECRET_KEY not found in config.json"))
+        .to_string();
+
+    let completion_url = config
+        .remove("COMPLETION_URL")
+        .unwrap_or_else(|| panic!("COMPLETION_URL not found in config.json"))
         .to_string();
 
     let context = Arc::new(Context {
+        completion_url,
         open_ai_key,
         client: reqwest::Client::new(),
         game_state: RwLock::new(HashMap::new()),
@@ -104,8 +107,8 @@ async fn main() {
         let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
 
         let cert_location = config
-            .remove(CERT_LOCATION_CONFIG)
-            .unwrap_or_else(|| panic!("{} not found in config.json", CERT_LOCATION_CONFIG))
+            .remove("CERT_LOCATION")
+            .unwrap_or_else(|| panic!("CERT_LOCATION not found in config.json"))
             .to_string();
 
         // configure certificate and private key used by https

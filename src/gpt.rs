@@ -5,13 +5,16 @@ use serde::de::DeserializeOwned;
 
 use crate::app_error::AppError;
 
+// "https://api.openai.com/v1/chat/completions"
+
 pub async fn gpt_chat(
     client: &Client,
+    completion_url: &str,
     open_ai_key: &str,
     body: &str,
 ) -> Result<ChatCompletion, AppError> {
     let response = client
-        .post("https://api.openai.com/v1/chat/completions")
+        .post(completion_url)
         .header("Content-Type", "application/json")
         .header("Authorization", format!("Bearer {}", open_ai_key))
         .body(body.to_owned())
@@ -31,6 +34,7 @@ pub async fn gpt_chat(
 
 pub async fn gpt_chat_retry<T>(
     client: &Client,
+    completion_url: &str,
     open_ai_key: &str,
     body: &str,
     retry: usize,
@@ -39,7 +43,7 @@ where
     T: DeserializeOwned + Clone,
 {
     for i in 0..retry {
-        let chat_completion = gpt_chat(client, open_ai_key, body).await;
+        let chat_completion = gpt_chat(client, completion_url, open_ai_key, body).await;
 
         if let Err(err) = chat_completion {
             tracing::error!("failure with OpenAI Chat endpoint: {:?}", err);

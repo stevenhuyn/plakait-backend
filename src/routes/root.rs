@@ -33,6 +33,7 @@ mod tests {
     #[tokio::test]
     async fn get_root() {
         let context = Arc::new(Context {
+            completion_url: "test.com".to_string(),
             open_ai_key: "OpenAI Key".to_string(),
             client: reqwest::Client::new(),
             game_state: RwLock::new(HashMap::new()),
