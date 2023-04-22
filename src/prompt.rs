@@ -69,7 +69,10 @@ ONLY output your message as a VALID JSON object with fields
 "name": "Jared,
 "expression" (required) unicode emoji representing Jared's face, 
 "dialogue" (required) 
-"endMessage" (nullable) Only appears if we have succesfully used the bathroom or we can no longer converse with Jared to give us permission to use the bathroom or one of us defecates/pees themselves.
+"endMessage" (nullable) A narration from 3rd person only shown at the end of the game Given by one of these end states:
+- Jared's toilet use is no longer possible
+- If the one who needs to go to the toilet ends up relieving themself, in the toilet or not (e.g. on the ground)
+- It is no longer possible to converse with Jared
 
 Examples:
 {
