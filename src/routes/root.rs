@@ -17,18 +17,11 @@ pub async fn get_root(State(context): State<Arc<Context>>) -> String {
 #[cfg(test)]
 mod tests {
     use crate::*;
-
-    use super::*;
     use axum::{
         body::Body,
-        extract::connect_info::MockConnectInfo,
-        http::{self, Request, StatusCode},
+        http::{Request, StatusCode},
     };
-    use serde_json::{json, Value};
-    use std::{borrow::BorrowMut, net::SocketAddr};
-    use tokio::net::TcpListener;
-    use tower::Service; // for `call`
-    use tower::ServiceExt; // for `oneshot` and `ready`
+    use tower::ServiceExt;
 
     #[tokio::test]
     async fn get_root() {
