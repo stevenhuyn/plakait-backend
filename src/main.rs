@@ -15,7 +15,7 @@ use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
-use crate::routes::{chat::post_chat, game::post_game, history::get_history, root::get_root};
+use crate::routes::{get_history, get_root, post_chat, post_game};
 
 mod app_error;
 mod gpt;

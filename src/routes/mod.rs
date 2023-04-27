@@ -14,13 +14,18 @@ use crate::{
     Context,
 };
 
-pub mod chat;
-pub mod game;
-pub mod history;
-pub mod root;
+mod chat;
+mod game;
+mod history;
+mod root;
 
 type MessageRole = ChatCompletionMessageRole;
 pub type GameStates = RwLock<HashMap<Uuid, Arc<Mutex<GameState>>>>;
+
+pub use chat::post_chat;
+pub use game::post_game;
+pub use history::get_history;
+pub use root::get_root;
 
 #[derive(Serialize, Debug)]
 pub struct GameState {
