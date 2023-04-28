@@ -22,6 +22,7 @@ sudo systemctl enable plakait-backend.service
 # Start the service
 sudo systemctl start plakait-backend.service
 
+
 # See status
 sudo systemctl status plakait-backend.service
 
@@ -30,4 +31,5 @@ sudo systemctl restart plakait-backend
 
 # What the service's output
 sudo journalctl -f -u plakait-backend.service
+sudo journalctl --lines 1000 --no-pager -f -u plakait-backend.service | cut -d ' ' -f 6-
 ```
