@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use ::serde::{Deserialize, Serialize};
 use anyhow::anyhow;
+use async_openai::types::{ChatCompletionResponseMessage, Role};
 use axum::{
     extract::{Path, State},
     Json,
 };
 use axum_macros::debug_handler;
-use openai::chat::ChatCompletionMessage;
 use uuid::Uuid;
 
 use crate::{
@@ -15,8 +15,6 @@ use crate::{
     routes::{send_user_message, Message},
     Context,
 };
-
-use super::MessageRole;
 
 pub const RETRY_COUNT: usize = 8;
 
@@ -35,17 +33,16 @@ pub struct JsonAiResponse {
     pub end_message: Option<String>,
 }
 
-impl From<Message> for ChatCompletionMessage {
+impl From<Message> for ChatCompletionResponseMessage {
     fn from(message: Message) -> Self {
         match message {
-            Message::User { name, content } => ChatCompletionMessage {
+            Message::User { name, content } => ChatCompletionResponseMessage {
                 content: format!(
                     "{}: {}",
                     name.unwrap_or_else(|| "Admin".to_string()),
                     content
                 ),
-                role: MessageRole::User,
-                name: None,
+                role: Role::User,
             },
             Message::Bot {
                 name,
@@ -63,10 +60,9 @@ impl From<Message> for ChatCompletionMessage {
 
                 tracing::debug!("message into request: {}", &json_content);
 
-                ChatCompletionMessage {
+                ChatCompletionResponseMessage {
                     content: json_content,
-                    role: MessageRole::Assistant,
-                    name: None,
+                    role: Role::Assistant,
                 }
             }
         }

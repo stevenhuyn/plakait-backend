@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
-use openai::chat::{ChatCompletionMessage, ChatCompletionMessageRole};
+use async_openai::types::ChatCompletionResponseMessage;
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
@@ -19,7 +19,6 @@ mod game;
 mod history;
 mod root;
 
-type MessageRole = ChatCompletionMessageRole;
 pub type GameStates = RwLock<HashMap<Uuid, Arc<Mutex<GameState>>>>;
 
 pub use chat::post_chat;
@@ -69,7 +68,7 @@ pub async fn send_user_message(
         .bot_name
         .to_owned();
 
-    let request_messages: Vec<ChatCompletionMessage> = messages
+    let request_messages: Vec<ChatCompletionResponseMessage> = messages
         .iter()
         .map(|message: &Message| message.to_owned().into())
         .collect();
