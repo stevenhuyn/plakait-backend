@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use async_openai::types::ChatCompletionResponseMessage;
+use async_openai::types::CreateChatCompletionResponse;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 
@@ -9,7 +9,7 @@ pub async fn gpt_chat(
     client: &Client,
     open_ai_key: &str,
     body: &str,
-) -> Result<ChatCompletionResponseMessage, AppError> {
+) -> Result<CreateChatCompletionResponse, AppError> {
     let response = client
         .post("https://api.openai.com/v1/chat/completions")
         .header("Content-Type", "application/json")
@@ -24,7 +24,7 @@ pub async fn gpt_chat(
 
     // TODO: tracing error handle?
 
-    let chat_completion: ChatCompletionResponseMessage = serde_json::from_str(&response)?;
+    let chat_completion: CreateChatCompletionResponse = serde_json::from_str(&response)?;
 
     Ok(chat_completion)
 }
@@ -46,12 +46,12 @@ where
             continue;
         };
 
-        let chat_completion = chat_completion.unwrap();
+        let content = &chat_completion.unwrap().choices[0].message.content;
 
-        match serde_json::from_str::<T>(&chat_completion.content) {
+        match serde_json::from_str::<T>(content) {
             Ok(json_content) => return Ok(json_content),
             Err(err) => {
-                tracing::debug!("failure {}: {} msg: {}", i, err, &chat_completion.content);
+                tracing::debug!("failure {}: {} msg: {}", i, err, content);
                 continue;
             }
         };
