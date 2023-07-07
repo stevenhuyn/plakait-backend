@@ -74,7 +74,7 @@ pub async fn send_user_message(
         .collect();
 
     let json = serde_json::json!({
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4",
         "messages": request_messages
     })
     .to_string();
