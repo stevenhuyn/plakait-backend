@@ -22,12 +22,15 @@ sudo systemctl enable plakait-backend.service
 # Start the service
 sudo systemctl start plakait-backend.service
 
+# Stop service 
+sudo systemctl stop plakait-backend.service
 
 # See status
 sudo systemctl status plakait-backend.service
 
 # Restart service
 sudo systemctl restart plakait-backend
+
 
 # What the service's output
 sudo journalctl -f -u plakait-backend.service
