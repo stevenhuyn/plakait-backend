@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use ::serde::{Deserialize, Serialize};
 use anyhow::anyhow;
-use async_openai::types::{ChatCompletionResponseMessage, Role};
 use axum::{
     extract::{Path, State},
     Json,
@@ -31,44 +30,6 @@ pub struct JsonAiResponse {
     pub expression: Option<String>,
     #[serde(rename = "endMessage")]
     pub end_message: Option<String>,
-}
-
-impl From<Message> for ChatCompletionResponseMessage {
-    fn from(message: Message) -> Self {
-        match message {
-            Message::User { name, content } => ChatCompletionResponseMessage {
-                content: Some(format!(
-                    "{}: {}",
-                    name.unwrap_or_else(|| "Admin".to_string()),
-                    content
-                )),
-                role: Role::User,
-                function_call: None,
-            },
-            Message::Bot {
-                name,
-                expression,
-                content,
-                end_message,
-            } => {
-                let json_content = serde_json::json!(JsonAiResponse {
-                    name: Some(name),
-                    expression,
-                    dialogue: content,
-                    end_message
-                })
-                .to_string();
-
-                tracing::debug!("message into request: {}", &json_content);
-
-                ChatCompletionResponseMessage {
-                    content: Some(json_content),
-                    role: Role::Assistant,
-                    function_call: None,
-                }
-            }
-        }
-    }
 }
 
 #[debug_handler]

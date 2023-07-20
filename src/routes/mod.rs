@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
-use async_openai::types::ChatCompletionResponseMessage;
+use async_openai::types::{ChatCompletionRequestMessage, ChatCompletionResponseMessage, Role};
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
@@ -48,6 +48,45 @@ pub enum Message {
     },
 }
 
+impl From<Message> for ChatCompletionRequestMessage {
+    fn from(message: Message) -> Self {
+        match message {
+            Message::User { name, content } => ChatCompletionRequestMessage {
+                content: Some(format!(
+                    "{}: {}",
+                    name.unwrap_or_else(|| "Admin".to_string()),
+                    content
+                )),
+                role: Role::User,
+                function_call: None,
+                name: None,
+            },
+            Message::Bot {
+                name,
+                expression,
+                content,
+                end_message,
+            } => {
+                let json_content = serde_json::json!(JsonAiResponse {
+                    name: Some(name),
+                    expression,
+                    dialogue: content,
+                    end_message
+                })
+                .to_string();
+
+                tracing::debug!("message into request: {}", &json_content);
+
+                ChatCompletionRequestMessage {
+                    content: Some(json_content),
+                    role: Role::Assistant,
+                    function_call: None,
+                    name: None,
+                }
+            }
+        }
+    }
+}
 /// Send a user message to ChatGPT and add both user and bot messages to the game state
 pub async fn send_user_message(
     context: &Context,
@@ -68,7 +107,7 @@ pub async fn send_user_message(
         .bot_name
         .to_owned();
 
-    let request_messages: Vec<ChatCompletionResponseMessage> = messages
+    let request_messages: Vec<ChatCompletionRequestMessage> = messages
         .iter()
         .map(|message: &Message| message.to_owned().into())
         .collect();
