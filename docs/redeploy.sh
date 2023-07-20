@@ -1,3 +1,5 @@
+# Outdated do not use
+
 #!/bin/bash
 
 cargo build --release

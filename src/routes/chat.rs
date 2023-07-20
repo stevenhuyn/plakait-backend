@@ -37,12 +37,13 @@ impl From<Message> for ChatCompletionResponseMessage {
     fn from(message: Message) -> Self {
         match message {
             Message::User { name, content } => ChatCompletionResponseMessage {
-                content: format!(
+                content: Some(format!(
                     "{}: {}",
                     name.unwrap_or_else(|| "Admin".to_string()),
                     content
-                ),
+                )),
                 role: Role::User,
+                function_call: None,
             },
             Message::Bot {
                 name,
@@ -61,8 +62,9 @@ impl From<Message> for ChatCompletionResponseMessage {
                 tracing::debug!("message into request: {}", &json_content);
 
                 ChatCompletionResponseMessage {
-                    content: json_content,
+                    content: Some(json_content),
                     role: Role::Assistant,
+                    function_call: None,
                 }
             }
         }

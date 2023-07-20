@@ -38,24 +38,33 @@ pub async fn gpt_chat_retry<T>(
 where
     T: DeserializeOwned + Clone,
 {
+    // Retry `retry` times
     for i in 0..retry {
+        // Call the chat endpoint
         let chat_completion = gpt_chat(client, open_ai_key, body).await;
 
+        // If the chat endpoint fails, log the error and continue to the next iteration
         if let Err(err) = chat_completion {
             tracing::error!("failure with OpenAI Chat endpoint: {:?}", err);
             continue;
         };
 
+        // The chat endpoint was successful, but we still need to parse the JSON response
         let content = &chat_completion.unwrap().choices[0].message.content;
 
-        match serde_json::from_str::<T>(content) {
-            Ok(json_content) => return Ok(json_content),
-            Err(err) => {
-                tracing::debug!("failure {}: {} msg: {}", i, err, content);
-                continue;
-            }
-        };
+        // If content exists and JSON is valid, return it
+        if let Some(content) = content {
+            match serde_json::from_str::<T>(content) {
+                Ok(json_content) => return Ok(json_content),
+                Err(err) => {
+                    // If the JSON is invalid, log the error and continue to the next iteration
+                    tracing::debug!("failure {}: {} msg: {}", i, err, content);
+                    continue;
+                }
+            };
+        }
     }
 
+    // If we got here, we didn't get a valid response from OpenAI
     Err(anyhow!("Failed to get valid response from OpenAI").into())
 }
