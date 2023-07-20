@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
-use async_openai::types::{ChatCompletionRequestMessage, ChatCompletionResponseMessage, Role};
+use async_openai::types::{ChatCompletionRequestMessage, Role};
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
@@ -87,6 +87,7 @@ impl From<Message> for ChatCompletionRequestMessage {
         }
     }
 }
+
 /// Send a user message to ChatGPT and add both user and bot messages to the game state
 pub async fn send_user_message(
     context: &Context,
