@@ -26,7 +26,6 @@ pub struct PostRoomResponse {
     messages: Vec<Message>,
 }
 
-// TODO: Refactor messaging behaviour from post_game and post_chat
 pub async fn post_game(
     State(context): State<Arc<Context>>,
     Json(payload): Json<PostRoomRequest>,
