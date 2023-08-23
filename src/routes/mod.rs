@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::SystemTime};
 
 use anyhow::anyhow;
 use async_openai::types::{ChatCompletionRequestMessage, Role};
@@ -30,6 +30,14 @@ pub use root::get_root;
 pub struct GameState {
     messages: Vec<Message>,
     scenario: Scenario,
+    #[serde(skip_serializing)]
+    created_at: SystemTime,
+}
+
+impl GameState {
+    pub fn get_created_at(&self) -> SystemTime {
+        self.created_at
+    }
 }
 
 #[derive(Clone, Serialize, Debug)]

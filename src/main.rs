@@ -3,11 +3,18 @@ use axum::{
     Router,
 };
 use reqwest::{header::CONTENT_TYPE, Client, Method};
-use routes::GameStates;
-use std::{collections::HashMap, env, net::SocketAddr, sync::Arc};
-use tokio::sync::RwLock;
+use routes::{GameState, GameStates};
+use std::{
+    collections::HashMap,
+    env,
+    net::SocketAddr,
+    sync::Arc,
+    time::{Duration, SystemTime},
+};
+use tokio::sync::{Mutex, RwLock};
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, Layer};
+use uuid::Uuid;
 
 use crate::routes::{get_history, get_root, post_chat, post_game};
 
@@ -79,6 +86,10 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+
+    tokio::spawn(async move {
+        remove_old_gamestates(&context.clone()).await;
+    });
 }
 
 /// Having a function that produces our app makes it easy to call it from tests
@@ -89,4 +100,33 @@ pub fn app(context: &Arc<Context>) -> Router {
         .route("/history/:id", get(get_history).with_state(context.clone()))
         .route("/game", post(post_game).with_state(context.clone()))
         .route("/chat/:id", post(post_chat).with_state(context.clone()))
+}
+
+async fn remove_old_gamestates(context: &Context) {
+    let one_day = Duration::from_secs(24 * 3600);
+    let game_states = &context.game_state;
+
+    loop {
+        tokio::time::sleep(one_day).await;
+
+        let mut ids_to_remove: Vec<&Uuid> = vec![];
+        let read_game_states = game_states.read().await;
+        for (id, game_state) in read_game_states.iter() {
+            let game_state = game_state.lock().await;
+            let elapsed_time = SystemTime::now().duration_since(game_state.get_created_at());
+            let should_remove = match elapsed_time {
+                Ok(time) => time < one_day,
+                Err(_) => true, // Keep the game state if there's an error in time comparison
+            };
+
+            if should_remove {
+                ids_to_remove.push(id);
+            }
+        }
+
+        let write_game_states = &mut game_states.write().await;
+        for id in ids_to_remove {
+            write_game_states.remove(id);
+        }
+    }
 }

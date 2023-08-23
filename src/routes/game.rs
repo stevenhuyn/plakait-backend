@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::SystemTime};
 
 use axum::{extract::State, Json};
 use serde::{Deserialize, Serialize};
@@ -46,6 +46,7 @@ pub async fn post_game(
             Arc::new(Mutex::new(GameState {
                 scenario: payload.scenario,
                 messages: vec![],
+                created_at: SystemTime::now(),
             }))
         })
         .lock()
