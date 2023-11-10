@@ -6,7 +6,7 @@ You will need a OpenAI API key to run this.
 
 Corresponding [frontend repo](https://github.com/stevenhuyn/plakait-frontend)
 
-## TODO
+## ~~TODO~~
 - Aide/Utoipa for OpenAPI docs?
 - Prompt Engineering
 - Memory Golfing
