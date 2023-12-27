@@ -51,9 +51,15 @@ where
         // The chat endpoint was successful, but we still need to parse the JSON response
         let content = &chat_completion.unwrap().choices[0].message.content;
 
+
+
         // If content exists and JSON is valid, return it
         if let Some(content) = content {
-            match serde_json::from_str::<T>(content) {
+            // Remove backticks
+            let content = content.replace(r#"```json"#, "");
+            let content = content.replace(r#"```"#, "");
+
+            match serde_json::from_str::<T>(&content) {
                 Ok(json_content) => return Ok(json_content),
                 Err(err) => {
                     // If the JSON is invalid, log the error and continue to the next iteration
@@ -61,6 +67,10 @@ where
                     continue;
                 }
             };
+        } else {
+            // If the content is None, log the error and continue to the next iteration
+            tracing::debug!("failure {}: content is None", i);
+            continue;
         }
     }
 
