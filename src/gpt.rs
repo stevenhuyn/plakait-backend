@@ -22,7 +22,6 @@ pub async fn gpt_chat(
         .await
         .unwrap();
 
-    // TODO: tracing error handle?
 
     let chat_completion: CreateChatCompletionResponse = serde_json::from_str(&response)?;
 

@@ -1,8 +1,9 @@
 use axum::{
+    http::{header::CONTENT_TYPE, Method},
     routing::{get, post},
     Router,
 };
-use reqwest::{header::CONTENT_TYPE, Client, Method};
+use reqwest::Client;
 use routes::GameStates;
 use std::{collections::HashMap, env, net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
@@ -75,10 +76,9 @@ async fn main() {
 
     let app = app(&context).layer(cors);
     tracing::debug!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 /// Having a function that produces our app makes it easy to call it from tests

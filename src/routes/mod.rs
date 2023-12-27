@@ -1,7 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
-use async_openai::types::{ChatCompletionRequestMessage, Role};
+use async_openai::types::{
+    ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage,
+    ChatCompletionRequestUserMessage, Role,
+};
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
@@ -51,16 +54,20 @@ pub enum Message {
 impl From<Message> for ChatCompletionRequestMessage {
     fn from(message: Message) -> Self {
         match message {
-            Message::User { name, content } => ChatCompletionRequestMessage {
-                content: Some(format!(
-                    "{}: {}",
-                    name.unwrap_or_else(|| "Admin".to_string()),
-                    content
-                )),
-                role: Role::User,
-                function_call: None,
-                name: None,
-            },
+            Message::User { name, content } => {
+                ChatCompletionRequestMessage::User(ChatCompletionRequestUserMessage {
+                    content: Some(
+                        format!(
+                            "{}: {}",
+                            name.unwrap_or_else(|| "Admin".to_string()),
+                            content
+                        )
+                        .into(),
+                    ),
+                    role: Role::User,
+                    name: None,
+                })
+            }
             Message::Bot {
                 name,
                 expression,
@@ -77,12 +84,13 @@ impl From<Message> for ChatCompletionRequestMessage {
 
                 tracing::debug!("message into request: {}", &json_content);
 
-                ChatCompletionRequestMessage {
+                ChatCompletionRequestMessage::Assistant(ChatCompletionRequestAssistantMessage {
                     content: Some(json_content),
                     role: Role::Assistant,
-                    function_call: None,
                     name: None,
-                }
+                    tool_calls: None,
+                    function_call: None,
+                })
             }
         }
     }
