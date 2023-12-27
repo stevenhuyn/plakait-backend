@@ -1,11 +1,11 @@
 use axum::{
-    http::{header::CONTENT_TYPE, Method},
+    http::{header::CONTENT_TYPE, Method, HeaderValue},
     routing::{get, post},
     Router,
 };
 use reqwest::Client;
 use routes::GameStates;
-use std::{collections::HashMap, env, net::SocketAddr, sync::Arc};
+use std::{env, net::SocketAddr, sync::Arc, collections::HashMap};
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, Layer};
@@ -41,24 +41,25 @@ async fn main() {
     let environment =
         env::var(ENVIRONMENT_CONFIG).expect("No ENV=prod|dev environment variable found");
 
-    if (environment != "prod") && (environment != "dev") {
-        panic!("ENV must be either prod or dev");
-    }
+        if (environment != "prod") && (environment != "dev") {
+            panic!("ENV must be either prod or dev");
+        }
+    
+        let context = Arc::new(Context {
+            open_ai_key,
+            client: reqwest::Client::new(),
+            game_state: RwLock::new(HashMap::new()),
+        });
 
-    let context = Arc::new(Context {
-        open_ai_key,
-        client: reqwest::Client::new(),
-        game_state: RwLock::new(HashMap::new()),
-    });
-
-    let origins = match environment.as_str() {
-        "prod" => ["https://plakait.com".parse().unwrap()],
-        "dev" => ["https://localhost:5173".parse().unwrap()],
+    let origins: Vec<HeaderValue> = match environment.as_str() {
+        "prod" => vec![
+            "https://plakait.com".parse().unwrap(),
+            "https://plakait.stevenhuyn.com".parse().unwrap(),
+        ],
+        "dev" => vec!["https://localhost:5173".parse().unwrap()],
         _ => unreachable!(),
     };
 
-    tracing::debug!("{}", environment);
-    tracing::debug!("{:?}", origins);
     let cors = CorsLayer::new()
         .allow_origin(origins)
         .allow_methods([Method::GET, Method::POST])
