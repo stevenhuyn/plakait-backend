@@ -1,6 +1,6 @@
 # Plakait Backend
 
-This is the backend for [Plakait](https://plakait.com), a dialogue game.
+This is the backend for [Plakait](https://plakait.stevenhuyn.com), a dialogue game.
 
 You will need a OpenAI API key to run this.
 
