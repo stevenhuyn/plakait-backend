@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use anyhow::anyhow;
 use async_openai::types::{
     ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage,
-    ChatCompletionRequestUserMessage, Role,
+    ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, Role,
 };
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
@@ -55,15 +55,13 @@ impl From<Message> for ChatCompletionRequestMessage {
     fn from(message: Message) -> Self {
         match message {
             Message::User { name, content } => {
+                let content = ChatCompletionRequestUserMessageContent::Text(format!(
+                    "{}: {}",
+                    name.unwrap_or_else(|| "Admin".to_string()),
+                    content
+                ));
                 ChatCompletionRequestMessage::User(ChatCompletionRequestUserMessage {
-                    content: Some(
-                        format!(
-                            "{}: {}",
-                            name.unwrap_or_else(|| "Admin".to_string()),
-                            content
-                        )
-                        .into(),
-                    ),
+                    content,
                     role: Role::User,
                     name: None,
                 })
