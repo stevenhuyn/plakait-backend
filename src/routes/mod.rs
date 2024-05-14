@@ -120,7 +120,7 @@ pub async fn send_user_message(
         .collect();
 
     let json = serde_json::json!({
-        "model": "gpt-4-1106-preview",
+        "model": "gpt-4o",
         "messages": request_messages
     })
     .to_string();
