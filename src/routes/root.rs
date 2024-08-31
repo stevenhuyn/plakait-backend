@@ -9,7 +9,7 @@ use crate::Context;
 pub async fn get_root(State(context): State<Arc<Context>>) -> String {
     let game_states = context.game_state.read().await;
 
-    let game_count = game_states.keys().len().to_string();
+    let game_count = format!("Game Count: {}", game_states.keys().len().to_string());
     tracing::debug!("Root get gotten - Game count: {}", game_count);
     game_count
 }
