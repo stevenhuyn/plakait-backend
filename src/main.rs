@@ -37,9 +37,9 @@ async fn main() {
         })))
         .init();
 
-    let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_SECRET_KEY env var found");
-
     dotenvy::dotenv().expect("Failed to find/read .env");
+    
+    let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_SECRET_KEY env var found");
     let environment =
         env::var(ENVIRONMENT_CONFIG).expect("No ENV=prod|dev environment variable found");
 
@@ -68,7 +68,7 @@ async fn main() {
         .allow_headers([CONTENT_TYPE]);
 
     let host = match environment.as_str() {
-        "prod" => [0, 0, 0, 0],
+        "prod" => [127, 0, 0, 1],
         "dev" => [127, 0, 0, 1],
         _ => unreachable!(),
     };
