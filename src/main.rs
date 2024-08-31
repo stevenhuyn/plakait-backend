@@ -38,18 +38,20 @@ async fn main() {
         .init();
 
     let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_SECRET_KEY env var found");
+
+    dotenvy::dotenv().expect("Failed to find/read .env");
     let environment =
         env::var(ENVIRONMENT_CONFIG).expect("No ENV=prod|dev environment variable found");
 
-        if (environment != "prod") && (environment != "dev") {
-            panic!("ENV must be either prod or dev");
-        }
-    
-        let context = Arc::new(Context {
-            open_ai_key,
-            client: reqwest::Client::new(),
-            game_state: RwLock::new(HashMap::new()),
-        });
+    if (environment != "prod") && (environment != "dev") {
+        panic!("ENV must be either prod or dev");
+    }
+
+    let context = Arc::new(Context {
+        open_ai_key,
+        client: reqwest::Client::new(),
+        game_state: RwLock::new(HashMap::new()),
+    });
 
     let origins: Vec<HeaderValue> = match environment.as_str() {
         "prod" => vec![
