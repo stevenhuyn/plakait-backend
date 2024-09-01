@@ -23,7 +23,7 @@ pub struct Context {
     game_state: GameStates,
 }
 
-const OPEN_AI_KEY_CONFIG: &str = "OPENAI_SECRET_KEY";
+const OPEN_AI_KEY_CONFIG: &str = "OPENAI_API_KEY";
 const ENVIRONMENT_CONFIG: &str = "ENV";
 
 #[tokio::main]
@@ -39,7 +39,7 @@ async fn main() {
 
     dotenvy::dotenv().expect("Failed to find/read .env");
     
-    let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_SECRET_KEY env var found");
+    let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_API_KEY env var found");
     let environment =
         env::var(ENVIRONMENT_CONFIG).expect("No ENV=prod|dev environment variable found");
 
