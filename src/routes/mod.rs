@@ -2,8 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
 use async_openai::types::{
-    ChatCompletionRequestAssistantMessage, ChatCompletionRequestMessage,
-    ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent, Role,
+    ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageContent, ChatCompletionRequestMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent
 };
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
@@ -62,7 +61,6 @@ impl From<Message> for ChatCompletionRequestMessage {
                 ));
                 ChatCompletionRequestMessage::User(ChatCompletionRequestUserMessage {
                     content,
-                    role: Role::User,
                     name: None,
                 })
             }
@@ -80,14 +78,15 @@ impl From<Message> for ChatCompletionRequestMessage {
                 })
                 .to_string();
 
+            
                 tracing::debug!("message into request: {}", &json_content);
 
+                let content = ChatCompletionRequestAssistantMessageContent::Text(json_content);
                 ChatCompletionRequestMessage::Assistant(ChatCompletionRequestAssistantMessage {
-                    content: Some(json_content),
-                    role: Role::Assistant,
+                    content: Some(content),
                     name: None,
                     tool_calls: None,
-                    function_call: None,
+                    ..Default::default()
                 })
             }
         }
