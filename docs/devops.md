@@ -36,3 +36,7 @@ sudo systemctl restart plakait-backend
 sudo journalctl -f -u plakait-backend.service
 sudo journalctl --lines 1000 --no-pager -f -u plakait-backend.service | cut -d ' ' -f 6-
 ```
+
+
+## htop
+Use `htop`
