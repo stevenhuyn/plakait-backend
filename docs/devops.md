@@ -40,3 +40,6 @@ sudo journalctl --lines 1000 --no-pager -f -u plakait-backend.service | cut -d '
 
 ## htop
 Use `htop`
+
+## Caddy
+it's in `/etc/caddy/Caddyfile
