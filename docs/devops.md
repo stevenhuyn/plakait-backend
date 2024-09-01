@@ -43,3 +43,5 @@ Use `htop`
 
 ## Caddy
 it's in `/etc/caddy/Caddyfile
+
+`sudo systemctl reload caddy`
