@@ -12,6 +12,9 @@ free -h
 ```
 
 ## Systemd
+The actual service file
+`etc/systemd/system/`
+
 ```bash
 # Reload the systemd daemon to read the new service file
 sudo systemctl daemon-reload
