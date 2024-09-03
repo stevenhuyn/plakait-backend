@@ -16,6 +16,7 @@ mod app_error;
 mod gpt;
 mod prompt;
 mod routes;
+mod otel;
 
 pub struct Context {
     open_ai_key: String,
@@ -29,13 +30,24 @@ const ENVIRONMENT_CONFIG: &str = "ENV";
 #[tokio::main]
 async fn main() {
     // initialize tracing
-    let stdout_log = tracing_subscriber::fmt::layer();
-    tracing_subscriber::registry()
-        .with(stdout_log.with_filter(filter::filter_fn(|metadata| {
-            // only log events from this crate
-            metadata.target().starts_with("plakait")
-        })))
-        .init();
+    // let stdout_log = tracing_subscriber::fmt::layer();
+    // tracing_subscriber::registry()
+    //     .with(stdout_log.with_filter(filter::filter_fn(|metadata| {
+    //         // only log events from this crate
+    //         metadata.target().starts_with("plakait")
+    //     })))
+    //     .init();
+
+    let _guard = init_tracing_subscriber();
+
+    tracing::info!(
+        monotonic_counter.foo = 1_u64,
+        key_1 = "bar",
+        key_2 = 10,
+        "handle foo",
+    );
+
+    tracing::info!(histogram.baz = 10, "histogram example",);
 
     dotenvy::dotenv().expect("Failed to find/read .env");
     
