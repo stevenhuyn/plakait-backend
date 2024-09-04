@@ -1,6 +1,7 @@
-use anyhow::Result;
-use data_encoding::BASE64;
-use opentelemetry::{global, Key, KeyValue};
+use std::io::Error;
+
+use opentelemetry::{trace::TracerProvider, Key, KeyValue};
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
     metrics::{
         reader::{DefaultAggregationSelector, DefaultTemporalitySelector},
@@ -14,29 +15,10 @@ use opentelemetry_semantic_conventions::{
     resource::{DEPLOYMENT_ENVIRONMENT, SERVICE_NAME, SERVICE_VERSION},
     SCHEMA_URL,
 };
+use tonic::metadata::*;
 use tracing_core::Level;
 use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
-// Create the required Metadata headers for OpenObserve
-fn otl_metadata(kind: MetadataKind, config: &DisruptorOtlConfig) -> Result<MetadataMap> {
-    let mut map = MetadataMap::with_capacity(3);
-
-    let otel_username = env::var("OTEL_USERNAME").expect("No OTEL_USERNAME env var found");
-    let ottel_password = env::var("OTEL_PASSWORD").expect("No OTEL_PASSWORD env var found");
-
-    let authorization_value = BASE64.encode(
-        &format!("{otel_username}{ottel_password}").as_bytes()
-    );
-    map.insert(
-        "authorization",
-        format!("Basic {authorization_value}").parse()?,
-    );
-    map.insert("organization", "default".parse()?);
-    map.insert("stream-name", "default".parse()?);
-
-    Ok(map)
-}
 
 // Create a Resource that captures information about the entity for which telemetry is recorded.
 fn resource() -> Resource {
@@ -44,20 +26,29 @@ fn resource() -> Resource {
         [
             KeyValue::new(SERVICE_NAME, env!("CARGO_PKG_NAME")),
             KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")),
-            KeyValue::new(DEPLOYMENT_ENVIRONMENT, "develop"),
+            KeyValue::new(DEPLOYMENT_ENVIRONMENT, "development"),
         ],
         SCHEMA_URL,
     )
+}
+
+fn otl_metadata() -> Result<MetadataMap, Error> {
+    let mut map = MetadataMap::with_capacity(3);
+
+    map.insert(
+        "authorization", "Basic c3RldmVuaHV5bkBnbWFpbC5jb206WmdQUWwyZUpnbVMxdHk4dA==".parse().unwrap(),
+    );
+    map.insert("organization", "default".parse().unwrap());
+    map.insert("stream-name", "default".parse().unwrap());
+    Ok(map)
 }
 
 // Construct MeterProvider for MetricsLayer
 fn init_meter_provider() -> SdkMeterProvider {
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
-        // NOTE: The default endpoint of OpenObserve is on port 5081
-        // whereas OTL default is http://localhost:4317
-        .with_endpoint("http://localhost:5080")
-        .with_metadata(otl_metadata()?)
+        .with_endpoint("http://localhost:5081/api/development")
+        .with_metadata(otl_metadata().unwrap())
         .build_metrics_exporter(
             Box::new(DefaultAggregationSelector::new()),
             Box::new(DefaultTemporalitySelector::new()),
@@ -112,14 +103,13 @@ fn init_meter_provider() -> SdkMeterProvider {
         .with_view(view_baz)
         .build();
 
-    global::set_meter_provider(meter_provider.clone());
-
+    opentelemetry::global::set_meter_provider(meter_provider.clone());
     meter_provider
 }
 
 // Construct Tracer for OpenTelemetryLayer
 fn init_tracer() -> Tracer {
-    opentelemetry_otlp::new_pipeline()
+    let provider = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_trace_config(
             opentelemetry_sdk::trace::Config::default()
@@ -133,20 +123,24 @@ fn init_tracer() -> Tracer {
         )
         .with_batch_config(BatchConfig::default())
         .with_exporter(
-          opentelemetry_otlp::new_exporter()
-            .tonic()
-            // NOTE: The default endpoint of OpenObserve is on port 5081
-            // whereas OTL default is http://localhost:4317
-            .with_endpoint("http://localhost:5080")
-            .with_metadata(otl_metadata()?)
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint("http://localhost:5081/api/development")
+                // .with_protocol(opentelemetry_otlp::Protocol::Grpc)
+                .with_metadata(otl_metadata().unwrap()),
         )
         .install_batch(runtime::Tokio)
-        .unwrap()
+        .unwrap();
+
+    opentelemetry::global::set_tracer_provider(provider.clone());
+    provider.tracer("plakait-backend-subscriber")
 }
 
 // Initialize tracing-subscriber and return OtelGuard for opentelemetry-related termination processing
 pub fn init_tracing_subscriber() -> OtelGuard {
     let meter_provider = init_meter_provider();
+    let tracer = init_tracer();
+    // let stdout_log = tracing_subscriber::fmt::layer();
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::filter::LevelFilter::from_level(
@@ -154,13 +148,18 @@ pub fn init_tracing_subscriber() -> OtelGuard {
         ))
         .with(tracing_subscriber::fmt::layer())
         .with(MetricsLayer::new(meter_provider.clone()))
-        .with(OpenTelemetryLayer::new(init_tracer()))
+        .with(OpenTelemetryLayer::new(tracer))
+        // .with(stdout_log.with_filter(filter::filter_fn(|metadata| {
+        //     // only log events from this crate
+        //     metadata.target().starts_with("plakait")
+        // })))
         .init();
+
 
     OtelGuard { meter_provider }
 }
 
-struct OtelGuard {
+pub struct OtelGuard {
     meter_provider: SdkMeterProvider,
 }
 
@@ -172,3 +171,7 @@ impl Drop for OtelGuard {
         opentelemetry::global::shutdown_tracer_provider();
     }
 }
+
+
+
+

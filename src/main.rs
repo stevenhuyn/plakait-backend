@@ -3,6 +3,8 @@ use axum::{
     routing::{get, post},
     Router,
 };
+
+use otel::init_tracing_subscriber;
 use reqwest::Client;
 use routes::GameStates;
 use std::{env, net::SocketAddr, sync::Arc, collections::HashMap};
@@ -29,15 +31,7 @@ const ENVIRONMENT_CONFIG: &str = "ENV";
 
 #[tokio::main]
 async fn main() {
-    // initialize tracing
-    // let stdout_log = tracing_subscriber::fmt::layer();
-    // tracing_subscriber::registry()
-    //     .with(stdout_log.with_filter(filter::filter_fn(|metadata| {
-    //         // only log events from this crate
-    //         metadata.target().starts_with("plakait")
-    //     })))
-    //     .init();
-
+    dotenvy::dotenv().expect("Failed to find/read .env");
     let _guard = init_tracing_subscriber();
 
     tracing::info!(
@@ -49,7 +43,6 @@ async fn main() {
 
     tracing::info!(histogram.baz = 10, "histogram example",);
 
-    dotenvy::dotenv().expect("Failed to find/read .env");
     
     let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_API_KEY env var found");
     let environment =
