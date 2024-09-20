@@ -68,7 +68,7 @@ async fn main() {
         .allow_headers([CONTENT_TYPE]);
 
     let host = match environment.as_str() {
-        "prod" => [127, 0, 0, 1],
+        "prod" => [0, 0, 0, 0],
         "dev" => [127, 0, 0, 1],
         _ => unreachable!(),
     };
