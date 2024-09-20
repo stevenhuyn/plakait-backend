@@ -37,8 +37,8 @@ async fn main() {
         })))
         .init();
 
-    dotenvy::dotenv().expect("Failed to find/read .env");
-    
+    let _ = dotenvy::dotenv();
+
     let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_API_KEY env var found");
     let environment =
         env::var(ENVIRONMENT_CONFIG).expect("No ENV=prod|dev environment variable found");
