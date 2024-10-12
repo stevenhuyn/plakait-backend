@@ -51,11 +51,11 @@ pub async fn post_game(
         .lock()
         .await;
 
-    let messages = send_user_message(&context, &mut game_state, initial_message).await;
-    tracing::debug!("Post Game: {:#?} - {}", payload.scenario, game_id);
+        let messages = send_user_message(&context, &mut game_state, initial_message).await;
+        tracing::debug!("Post Game: {:#?} - {}", payload.scenario, game_id);
 
-    match messages {
-        Ok(messages) => Ok(Json(PostRoomResponse { game_id, messages })),
-        Err(e) => Err(e),
-    }
+        match messages {
+            Ok(messages) => Ok(Json(PostRoomResponse { game_id, messages })),
+            Err(e) => Err(e),
+        }
 }

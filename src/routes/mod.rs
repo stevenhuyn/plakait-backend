@@ -2,7 +2,9 @@ use std::{collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
 use async_openai::types::{
-    ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageContent, ChatCompletionRequestMessage, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageContent
+    ChatCompletionRequestAssistantMessage, ChatCompletionRequestAssistantMessageContent,
+    ChatCompletionRequestMessage, ChatCompletionRequestUserMessage,
+    ChatCompletionRequestUserMessageContent,
 };
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock};
@@ -10,9 +12,9 @@ use uuid::Uuid;
 
 use crate::{
     app_error::AppError,
-    gpt::gpt_chat_retry,
+    gpt::gpt_chat,
     prompt::{Scenario, PROMPT_DATA},
-    routes::chat::{JsonAiResponse, RETRY_COUNT},
+    routes::chat::{JsonAiResponse},
     Context,
 };
 
@@ -78,7 +80,6 @@ impl From<Message> for ChatCompletionRequestMessage {
                 })
                 .to_string();
 
-            
                 tracing::debug!("message into request: {}", &json_content);
 
                 let content = ChatCompletionRequestAssistantMessageContent::Text(json_content);
@@ -118,17 +119,10 @@ pub async fn send_user_message(
         .map(|message: &Message| message.to_owned().into())
         .collect();
 
-    let json = serde_json::json!({
-        "model": "gpt-4o",
-        "messages": request_messages
-    })
-    .to_string();
-
-    let json_ai_response: JsonAiResponse =
-        match gpt_chat_retry(&context.client, &context.open_ai_key, &json, RETRY_COUNT).await {
-            Ok(response) => response,
-            Err(_err) => return Err(anyhow!("Failed to get valid response from OpenAI").into()),
-        };
+    let json_ai_response: JsonAiResponse = match gpt_chat(&request_messages).await {
+        Ok(response) => response,
+        Err(_err) => return Err(anyhow!("Failed to get valid response from OpenAI").into()),
+    };
 
     let dialogue = json_ai_response.dialogue;
 

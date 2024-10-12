@@ -1,79 +1,50 @@
-use anyhow::{anyhow, Result};
-use async_openai::types::CreateChatCompletionResponse;
-use reqwest::Client;
+use anyhow::Result;
+use async_openai::{
+    types::{
+        ChatCompletionRequestMessage, ChatCompletionRequestSystemMessageArgs,
+        CreateChatCompletionRequestArgs,
+    },
+    Client,
+};
+use backoff::ExponentialBackoffBuilder;
 use serde::de::DeserializeOwned;
 
 use crate::app_error::AppError;
 
-pub async fn gpt_chat(
-    client: &Client,
-    open_ai_key: &str,
-    body: &str,
-) -> Result<CreateChatCompletionResponse, AppError> {
-    let response = client
-        .post("https://api.openai.com/v1/chat/completions")
-        .header("Content-Type", "application/json")
-        .header("Authorization", format!("Bearer {}", open_ai_key))
-        .body(body.to_owned())
-        .send()
-        .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
-
-
-    let chat_completion: CreateChatCompletionResponse = serde_json::from_str(&response)?;
-
-    Ok(chat_completion)
-}
-
-pub async fn gpt_chat_retry<T>(
-    client: &Client,
-    open_ai_key: &str,
-    body: &str,
-    retry: usize,
-) -> Result<T, AppError>
+pub async fn gpt_chat<T>(messages: &[ChatCompletionRequestMessage]) -> Result<T, AppError>
 where
     T: DeserializeOwned + Clone,
 {
-    // Retry `retry` times
-    for i in 0..retry {
-        // Call the chat endpoint
-        let chat_completion = gpt_chat(client, open_ai_key, body).await;
+    let backoff = ExponentialBackoffBuilder::new()
+        .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
+        .build();
+    let client = Client::new().with_backoff(backoff);
 
-        // If the chat endpoint fails, log the error and continue to the next iteration
-        if let Err(err) = chat_completion {
-            tracing::error!("failure with OpenAI Chat endpoint: {:?}", err);
-            continue;
-        };
+    let request = CreateChatCompletionRequestArgs::default()
+        .max_tokens(512u16)
+        .model("gpt-4o")
+        .messages(messages)
+        .build()
+        .unwrap();
 
-        // The chat endpoint was successful, but we still need to parse the JSON response
-        let content = &chat_completion.unwrap().choices[0].message.content;
+    let openai_response = client.chat().create(request).await.unwrap();
+
+    let response_content = openai_response
+        .choices
+        .first()
+        .unwrap()
+        .message
+        .content
+        .clone()
+        .unwrap();
+
+    tracing::debug!(response_content);
+
+    let response_content = response_content.replace("```json", "");
+    let response_content = response_content.replace("```", "");
 
 
 
-        // If content exists and JSON is valid, return it
-        if let Some(content) = content {
-            // Remove backticks
-            let content = content.replace(r#"```json"#, "");
-            let content = content.replace(r#"```"#, "");
-
-            match serde_json::from_str::<T>(&content) {
-                Ok(json_content) => return Ok(json_content),
-                Err(err) => {
-                    // If the JSON is invalid, log the error and continue to the next iteration
-                    tracing::debug!("failure {}: {} msg: {}", i, err, content);
-                    continue;
-                }
-            };
-        } else {
-            // If the content is None, log the error and continue to the next iteration
-            tracing::debug!("failure {}: content is None", i);
-            continue;
-        }
-    }
-
-    // If we got here, we didn't get a valid response from OpenAI
-    Err(anyhow!("Failed to get valid response from OpenAI").into())
+    Ok(serde_json::from_str::<T>(&response_content)?)
 }
+

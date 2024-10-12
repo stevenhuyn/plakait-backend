@@ -946,6 +946,7 @@ dependencies = [
  "async-openai",
  "axum",
  "axum-macros",
+ "backoff",
  "dotenvy",
  "once_cell",
  "reqwest",
