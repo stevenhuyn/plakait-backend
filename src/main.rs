@@ -3,7 +3,6 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use reqwest::Client;
 use routes::GameStates;
 use std::{env, net::SocketAddr, sync::Arc, collections::HashMap};
 use tokio::sync::RwLock;
@@ -18,8 +17,6 @@ mod prompt;
 mod routes;
 
 pub struct Context {
-    open_ai_key: String,
-    client: Client,
     game_state: GameStates,
 }
 
@@ -39,7 +36,7 @@ async fn main() {
 
     let _ = dotenvy::dotenv();
 
-    let open_ai_key = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_API_KEY env var found");
+    let _ = env::var(OPEN_AI_KEY_CONFIG).expect("No OPENAI_API_KEY env var found");
     let environment =
         env::var(ENVIRONMENT_CONFIG).expect("No ENV=prod|dev environment variable found");
 
@@ -48,8 +45,6 @@ async fn main() {
     }
 
     let context = Arc::new(Context {
-        open_ai_key,
-        client: reqwest::Client::new(),
         game_state: RwLock::new(HashMap::new()),
     });
 
