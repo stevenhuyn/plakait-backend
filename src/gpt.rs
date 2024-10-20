@@ -1,8 +1,8 @@
 use anyhow::Result;
 use async_openai::{
     types::{
-        ChatCompletionRequestMessage, ChatCompletionRequestSystemMessageArgs,
-        CreateChatCompletionRequestArgs,
+        ChatCompletionRequestMessage,
+        CreateChatCompletionRequestArgs, ResponseFormat,
     },
     Client,
 };
@@ -23,6 +23,8 @@ where
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(512u16)
         .model("gpt-4o")
+        .response_format(ResponseFormat::JsonObject)
+        .temperature(1.8)
         .messages(messages)
         .build()
         .unwrap();
