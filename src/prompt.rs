@@ -34,8 +34,8 @@ ONLY output your message as a VALID JSON object with fields
 {
     "name": "Nick",
     "expression": "A unicode emoji representing their face",
-    "dialogue": "-",
-    "endMessage": "(optional)"
+    "dialogue": "{{Nick's response}}",
+    "endMessage": "{{End game final message (optional)}}"
 }
 ```
 Clarification on "endMessage" (optional) A narration from 3rd person only shown at the end of the game Given by one of these end states:
@@ -61,8 +61,8 @@ ONLY output your message as a VALID JSON object with fields
 {
     "name": "Pamela",
     "expression": "A unicode emoji representing their face",
-    "dialogue": "-",
-    "endMessage": "(optional)"
+    "dialogue": "{{Pamela's response}}",
+    "endMessage": "{{End game final message (optional)}}"
 }
 ```
 
@@ -90,9 +90,9 @@ ONLY output your message as a VALID JSON object with fields
 ```json
 {
     "name": "Jared",
-    "expression": "A unicode emoji representing Jared's face",
-    "dialogue": "(required)",
-    "endMessage": "-"
+    "expression": "{{A unicode emoji representing Jared's face}}",
+    "dialogue": "{{Jared's response}}",
+    "endMessage": "{{End game final message (optional)}}"
 }
 ```
 
