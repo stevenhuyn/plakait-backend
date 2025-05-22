@@ -22,7 +22,7 @@ where
 
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(512u16)
-        .model("gpt-4o")
+        .model("chatgpt-4o-latest")
         .response_format(ResponseFormat::JsonObject)
         .temperature(1.8)
         .messages(messages)
