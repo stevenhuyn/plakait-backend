@@ -84,7 +84,7 @@ async fn main() {
 pub fn app(context: &Arc<Context>) -> Router {
     Router::new()
         .route("/", get(get_root).with_state(context.clone()))
-        .route("/history/:id", get(get_history).with_state(context.clone()))
+        .route("/history/{id}", get(get_history).with_state(context.clone()))
         .route("/game", post(post_game).with_state(context.clone()))
-        .route("/chat/:id", post(post_chat).with_state(context.clone()))
+        .route("/chat/{id}", post(post_chat).with_state(context.clone()))
 }

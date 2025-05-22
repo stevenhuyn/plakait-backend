@@ -45,8 +45,6 @@ where
     let response_content = response_content.replace("```json", "");
     let response_content = response_content.replace("```", "");
 
-
-
     Ok(serde_json::from_str::<T>(&response_content)?)
 }
 
