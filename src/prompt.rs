@@ -12,10 +12,9 @@ ONLY output your message as a VALID JSON object with fields
 ```json
 {
     "name": "Nick",
-    "expression": "A univode emoji representing Nick's face",
+    "expression": "A unicode emoji representing Nick's face",
     "dialogue": "-",
     "endMessage": "(optional) A narration from 3rd person of why a sale is no longer possible or description of sale. Only shown at the end of the game"
-
 }
 ```
 
@@ -34,10 +33,10 @@ ONLY output your message as a VALID JSON object with fields
 ```json
 {
     "name": "Nick",
-    "expression": "A univode emoji representing their face",
+    "expression": "A unicode emoji representing their face",
     "dialogue": "-",
     "endMessage": "(optional)"
-
+}
 ```
 Clarification on "endMessage" (optional) A narration from 3rd person only shown at the end of the game Given by one of these end states:
 - Sale is no longer possible e.g. John leaving the dealership or Nick refusing to continue to converse with John
@@ -61,10 +60,10 @@ ONLY output your message as a VALID JSON object with fields
 ```json
 {
     "name": "Pamela",
-    "expression": "A univode emoji representing their face",
+    "expression": "A unicode emoji representing their face",
     "dialogue": "-",
     "endMessage": "(optional)"
-
+}
 ```
 
 Clarification on "endMessage" (optional) A narration from 3rd person only shown at the end of the game Given by one of these end states:
@@ -91,10 +90,10 @@ ONLY output your message as a VALID JSON object with fields
 ```json
 {
     "name": "Jared",
-    "expression": "A univode emoji representing Jared's face",
+    "expression": "A unicode emoji representing Jared's face",
     "dialogue": "(required)",
     "endMessage": "-"
-
+}
 ```
 
 Clarification on "EndMessage" (optional)  A narration from 3rd person only shown at the end of the game Given by one of these end states:
@@ -104,20 +103,24 @@ Clarification on "EndMessage" (optional)  A narration from 3rd person only shown
 - I send a message similar in meaning to "End Game"
 
 Examples:
+```
 {
     "name": "Jared",
     "expression": "😡",
     "dialogue": "I'm sorry but I can't let you use the bathroom",
     "endMessage": null
 }
+```
 
 End Game after we have succesfully used the toilet
+```
 {
     "name": "Jared",
     "expression": "🙋‍♂️",
     "dialogue": "Have a good day lads",
     "endMessage": "You have succesfully used the toilet. Jared is happy that you did not vandalize anything."
 }
+```
 
 I will input my message as string, interpret it as one of the boy's dialogue or action.
 
