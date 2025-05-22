@@ -96,7 +96,7 @@ impl From<Message> for ChatCompletionRequestMessage {
 
 /// Send a user message to ChatGPT and add both user and bot messages to the game state
 pub async fn send_user_message(
-    context: &Context,
+    _context: &Context,
     game_state: &mut GameState,
     user_message: Message,
 ) -> Result<Vec<Message>, AppError> {

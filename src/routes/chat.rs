@@ -15,8 +15,6 @@ use crate::{
     Context,
 };
 
-pub const RETRY_COUNT: usize = 8;
-
 #[derive(Clone, Deserialize, Debug)]
 pub struct PostChatRequest {
     name: String,
