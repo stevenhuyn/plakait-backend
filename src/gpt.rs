@@ -6,7 +6,6 @@ use async_openai::{
     },
     Client,
 };
-use backoff::ExponentialBackoffBuilder;
 use serde::de::DeserializeOwned;
 
 use crate::app_error::AppError;
@@ -15,10 +14,7 @@ pub async fn gpt_chat<T>(messages: &[ChatCompletionRequestMessage]) -> Result<T,
 where
     T: DeserializeOwned + Clone,
 {
-    let backoff = ExponentialBackoffBuilder::new()
-        .with_max_elapsed_time(Some(std::time::Duration::from_secs(60)))
-        .build();
-    let client = Client::new().with_backoff(backoff);
+    let client = Client::new();
 
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(512u16)
